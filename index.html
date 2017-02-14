@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+body {
+  font-family: "Open Sans", "Hiragino Sans GB", "Source Sans Pro", "Microsoft YaHei", "微软雅黑", "STHeiti", "WenQuanYi Micro Hei", sans-serif;
+}
+
+.introduction {
+  font-family: "Open Sans", "Hiragino Sans GB", "Source Sans Pro", "Microsoft YaHei", "微软雅黑", "STHeiti", "WenQuanYi Micro Hei", sans-serif;
+}
+
+p.step-button {
+  border-bottom: 2px solid #bdbdbd;
+  color:#bdbdbd;
+
+  display:inline-block;
+  margin-left:10px;
+  cursor: pointer;
+}
+
+p.diver {
+  /*border-bottom: 2px solid #7e7e7e;*/
+  color:#7e7e7e;
+
+  display:inline-block;
+  margin-left:10px;
+}
+
+a.link-button {
+  /*border-bottom: 2px solid steelblue;*/
+  color:steelblue;
+
+  display:inline-block;
+  margin-left:10px;
+}
+
+.description {
+    position: relative;
+    height: 70px;
+    padding: 0;
+}
+
+.step {
+    position: relative;
+    padding: 0;
+    margin-left:-10px;
+}
+
+svg {
+  font: 12px sans-serif;
+}
+
+.background path {
+  fill: none;
+  stroke: #ccc;
+  stroke-opacity: .4;
+  shape-rendering: crispEdges;
+}
+
+.foreground path {
+  fill: none;
+  stroke: steelblue;
+  stroke-opacity: .7;
+}
+
+.brush .extent {
+  fill-opacity: .3;
+  stroke: #fff;
+  shape-rendering: crispEdges;
+}
+
+.axis line, .axis path {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.axis text {
+  text-shadow: 0 1px 0 #fff;
+}
+
+#tooltip {
+        position: absolute;
+        width: 200px;
+        height: auto;
+        padding: 10px;
+        background-color: white;
+        -webkit-border-radius: 10px;
+        -moz-border-radius: 10px;
+        border-radius: 10px;
+        -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+        -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+        box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+        pointer-events: none;
+}
+
+#tooltip.hidden {
+        display: none;
+}
+
+#tooltip p {
+        margin: 0;
+        font-family: "Open Sans", "Hiragino Sans GB", "Source Sans Pro", "Microsoft YaHei", "微软雅黑", "STHeiti", "WenQuanYi Micro Hei", sans-serif;
+        font-size: 16px;
+        line-height: 20px;
+}
+
+</style>
+<head>
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://bl.ocks.org/kwhsiung/raw/913407edfd867f0c50851b397c5f7d03/" />
+<meta property="og:title" content="觀光客在台北旅遊會花多少錢？利用圖表一起來探索 2015 年全球 71 座城市旅遊花費" />
+<meta property="og:site_name" content="bl.ocks.org" />
+<meta property="og:image" content="https://gist.githubusercontent.com/kwhsiung/913407edfd867f0c50851b397c5f7d03/raw/db10a1bddba9a78f73f2e2d851cc877a9be74f64/preview.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="900" />
+<meta property="article:author" content="https://www.facebook.com/kevin.bear.530" />
+</head>
+<body>
+<title>觀光客在台北旅遊會花多少錢？利用圖表一起來探索 2015 年全球 71 座城市旅遊花費</title>
+<div class="description">
+  <h1 class="description-text"></h1>
+</div>
+<div class="step">
+  <p style="display:inline" class="step-button" id="step0">開始介紹</p>
+  <p style="display:inline" class="step-button" id="step1">對比全球</p>
+  <p style="display:inline" class="step-button" id="step2">對比東亞</p>
+  <p style="display:inline" class="step-button" id="step3">對比歐美</p>
+  <p style="display:inline" class="step-button" id="step4">對比美國</p>
+  <p style="display:inline" class="step-button" id="explore">探索圖表</p>
+  <p style="display:inline" class="diver">|</p>
+  <a style="display:inline" class="link-button" href="http://bl.ocks.org/kwhsiung/raw/be986f5074e8d7f4205d6278c9a26416/" target="_blank">來看看全球全球 71 座城市物價比較</a>
+  <p style="display:inline" class="diver">|</p>
+  <a style="display:inline" class="link-button" href="https://www.ubs.com/microsites/prices-earnings/prices-earnings.html" target="_blank">UBS Prices & Earnings (2015)</a>
+</div>
+<div id="tooltip" class="hidden">
+  <p><span id="value"></span></p>
+</div>
+<script src="//d3js.org/d3.v3.min.js"></script>
+<script>
+
+d3.selection.prototype.moveToFront = function() {
+      return this.each(function(){
+        this.parentNode.appendChild(this);
+      });
+    };
+
+d3.selection.prototype.moveToBack = function() {
+    return this.each(function() {
+        var firstChild = this.parentNode.firstChild;
+        if (firstChild) {
+            this.parentNode.insertBefore(this, firstChild);
+        }
+    });
+};
+
+var usd_exchange_rate = 31.25;
+
+var width = window.innerWidth
+|| document.documentElement.clientWidth
+|| document.body.clientWidth;
+
+var height = window.innerHeight
+|| document.documentElement.clientHeight
+|| document.body.clientHeight;
+
+var m = [30, 30, 440, 10]; // margin.top, right, bottom , left
+if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|BB|PlayBook|IEMobile|Windows Phone|Kindle|Silk|Opera Mini/i.test(navigator.userAgent)) {
+    // Take the user to a different screen here.
+    w = 1450 - m[1] - m[3];
+    h = 900 - m[0] - m[2];
+} else {
+  w = width - m[1] - m[3];
+  h = height - m[0] - m[2];
+}
+
+var x = d3.scale.ordinal().rangePoints([0, w], 1),
+    y = {},
+    rank = {};
+
+var line = d3.svg.line(),
+    axis = d3.svg.axis().orient("left"),
+    background,
+    foreground;
+
+var svg = d3.select("body").append("svg")
+    .attr("width", w + m[1] + m[3])
+    .attr("height", h + m[0] + m[2])
+  .append("g")
+    .attr("transform", "translate(" + m[3] + "," + m[0] + ")")
+    // .style("opacity", .3);
+
+svg.append("text")
+.attr("class", "introduction")
+.attr("x", w/2)
+.attr("y", h/2)
+.text("觀光客在台北旅遊會花多少錢？利用圖表一起來探索 2015 年全球 71 座城市旅遊花費")
+.style("font-size", "35px")
+.style("font-weight", "bold")
+.attr("text-anchor", "middle");
+
+svg.append("text")
+.attr("class", "introduction")
+.attr("x", w/2)
+.attr("y", h/2 + 40)
+.text("點一下圖表來看看！")
+.style("font-size", "35px")
+.style("font-weight", "bold")
+.attr("text-anchor", "middle");
+
+
+d3.csv("pricecomparsion-zhTW.csv", function(error, cities) {
+  if (error) throw error;
+
+  // Extract the list of dimensions and create a scale for each.
+  // x.domain(dimensions = d3.keys(cities[0]).filter(function(d) {
+  //   return d != "City" && (y[d] = d3.scale.linear()
+  //       .domain(d3.extent(cities, function(p) { return +p[d]; }))
+  //       .range([h, 0]));
+  // }));
+
+  dimensions = d3.keys(cities[0])
+                 .filter(function(d) {
+                  return d === "大眾運輸工具（巴士、電車、捷運）" ||
+                         d === "計程車" ||
+                         d === "基本旅費總和" ||
+                         d === "餐廳帳單" ||
+                         d === "住宿費（高等旅館）" ||
+                         d === "住宿費（中等旅館）";
+                 });
+  x.domain(dimensions);
+
+  for(var i = 0; i <= dimensions.length; i += 1) {
+    y[dimensions[i]] = d3.scale.linear()
+                         .domain(d3.extent(cities, function(p) { return (+p[dimensions[i]] * usd_exchange_rate); }))
+                         .range([h - 20, 0]);
+
+    var dimension_values = cities.map(function(d) { return +d[dimensions[i]]; }).sort(function(a, b) { return d3.descending(a, b); });
+    rank[dimensions[i]] = d3.scale.linear()
+                         .domain(dimension_values)
+                         .range(d3.range(1, 72)); // 71 cities
+  }
+
+  d3.select(".step")
+    // .style("position", "realtive")
+    .style("left", (x("大眾運輸工具（巴士、電車、捷運）") - 30) + "px")
+
+  d3.select(".description")
+    // .style("position", "realtive")
+    .style("left", (x("大眾運輸工具（巴士、電車、捷運）") - 30) + "px")
+
+  d3.select("#step0")
+    .style("color", "black")
+    .style("border-bottom", "2px solid black");
+
+  // Add grey background lines for context.
+  // background = svg.append("g")
+  //     .attr("class", "background")
+  //   .selectAll("path")
+  //     .data(cities)
+  //   .enter().append("path")
+  //     .attr("d", path);
+
+  // Add blue foreground lines for focus.
+  foreground = svg.append("g")
+    .selectAll("path")
+      .data(cities)
+    .enter()
+    .append("path")
+      .attr("d", path)
+      .style({
+        "fill": "none",
+        "stroke": "#ccc",
+        "stroke-opacity": ".3",
+      });
+
+  // Add a group element for each dimension.
+  var g = svg.selectAll(".dimension")
+      .data(dimensions)
+    .enter().append("g")
+      .attr("class", "dimension")
+      .attr("transform", function(d) { return "translate(" + x(d) + ")"; });
+
+  // Add an axis and title.
+  var axes = g.append("g")
+      .attr("class", "axis")
+      .each(function(d) { d3.select(this).call(axis.scale(y[d])); })
+
+  axes.style("opacity", .3);
+
+  axes.append("text")
+      .attr("text-anchor", "middle")
+      .attr("y", -9)
+      .style("pointer-events", "auto")
+      .text(function(d) {
+        return d + " (?)";
+      })
+      .on("mouseover", function(d) {
+        var info;
+
+        switch (d) {
+          case "大眾運輸工具（巴士、電車、捷運）":
+            info = "大眾運輸工具花費計算標準為旅行大約 10 公里或旅行 10 站點之票價。"
+            break;
+          case "計程車":
+            info = "計程車費為在不超過城市邊界的條件下乘坐 5 公里所需花費，並已將服務費計算其中。"
+            break;
+          case "基本旅費總和":
+            info = "基本旅費總和包含在高等旅館住宿一晚之住宿費、兩人份的晚餐消費，其中包含一瓶酒的酒錢、計程車費、兩張大眾運輸工具之車票錢、租車並行駛 100 公里之消費、一本封裝書的消費、一通電話的電話費與明信片的消費，但不包含從出發地到目的地旅遊的交通費。"
+            break;
+          case "餐廳帳單":
+            info = "餐廳帳單統計午餐時間用餐，並包含開胃菜、主菜、甜點與服務費，但不包含飲料之餐廳消費，其中被挑選之餐廳在當地皆有良好口碑。"
+            break;
+          case "住宿費（高等旅館）":
+            info = "住宿費以住宿一晚之消費為單位，房間內需包含浴室，並在隔日附上兩人份的早餐。"
+            break;
+          case "住宿費（中等旅館）":
+            info = "住宿費以住宿一晚之消費為單位，房間內需包含浴室，並在隔日附上兩人份的早餐。"
+            break;
+          default:
+        }
+
+        //Update the tooltip position and value
+        d3.select("#tooltip")
+          .style("left", (x(d) - 85) + "px")
+          .style("top", 160 + "px")
+          .select("#value")
+          .text(info);
+
+        //Show the tooltip
+        d3.select("#tooltip").classed("hidden", false).style("opacity", 0).transition().duration(500).style("opacity", 1);
+      })
+      .on("mouseout", function() {
+        //Hide the tooltip
+        d3.select("#tooltip").style("opacity", 1).transition().duration(500).style("opacity", 0);
+      });
+
+  // Add and store a brush for each axis.
+  // g.append("g")
+  //     .attr("class", "brush")
+  //     .each(function(d) { d3.select(this).call(y[d].brush = d3.svg.brush().y(y[d]).on("brush", brush)); })
+  //   .selectAll("rect")
+  //     .attr("x", -8)
+  //     .attr("width", 16);
+
+  var chart = svg.append("rect")
+      .attr("width", w)
+      .attr("height", h)
+      .attr("transform", "translate(0, -5)")
+      .attr("opacity", 0)
+      .style("cursor", "pointer");
+
+  d3.selectAll(".introduction").moveToFront();
+
+  var next_step = 1;
+  chart.on("click", function() {
+    switch (next_step) {
+      case 1:
+        next_step = 2;
+        perform_step("step1");
+        break;
+      case 2:
+        next_step = 3;
+        perform_step("step2");
+        break;
+      case 3:
+        next_step = 4;
+        perform_step("step3");
+        break;
+      case 4:
+        next_step = "explore";
+        perform_step("step4");
+        break;
+      case "explore":
+        perform_step("explore");
+        break;
+      default:
+    }
+  });
+
+  d3.select("#step0")
+  .on("click", function() { next_step = 1; perform_step("step0"); })
+  d3.select("#step1")
+  .on("click", function() { next_step = 2; perform_step("step1"); })
+  d3.select("#step2")
+  .on("click", function() { next_step = 3; perform_step("step2"); })
+  d3.select("#step3")
+  .on("click", function() { next_step = 4; perform_step("step3"); })
+  d3.select("#step4")
+  .on("click", function() { next_step = "explore"; perform_step("step4"); })
+  d3.select("#explore")
+  .on("click", function() { perform_step("explore"); })
+
+  function perform_step(step) {
+    var taipei = ["台北，台灣"],
+        east_asia_and_taipei = ["東京，日本", "香港", "北京，中國", "上海，中國", "台北，台灣"],
+        euro_and_taipei = ["紐約，美國", "阿姆斯特丹，荷蘭", "巴黎，法國", "柏林，德國", "倫敦，英國", "台北，台灣"],
+        usa_and_taipei = ["紐約，美國", "芝加哥，美國", "邁阿密，美國", "洛杉磯，美國", "台北，台灣"];
+
+    var description_text,
+        cities_of_step;
+
+    switch (step) {
+      case "step0":
+        description_text = "";
+        cities_of_step = null;
+        break;
+      case "step1":
+        description_text = "台北旅費與他國 70 座城市比較";
+        cities_of_step = taipei;
+        break;
+      case "step2":
+        description_text = "台北旅費與東亞城市旅費比較";
+        cities_of_step = east_asia_and_taipei;
+        break;
+      case "step3":
+        description_text = "台北旅費與歐美城市旅費比較";
+        cities_of_step = euro_and_taipei;
+        break;
+      case "step4":
+        description_text = "台北旅費與美國城市旅費比較";
+        cities_of_step = usa_and_taipei;
+        break;
+      case "explore":
+        description_text = "將滑鼠放在線上，自己來探索圖表！";
+        cities_of_step = taipei;
+        break;
+      default:
+    }
+
+    d3.selectAll(".step-button")
+      .style("color", "#bdbdbd")
+      .style("border-bottom", "2px solid #bdbdbd");
+    d3.select("#" + step)
+      .style("color", "black")
+      .style("border-bottom", "2px solid black");
+
+    if(step !== "step0") {
+      chart.style("pointer-events", "auto");
+
+      d3.selectAll(".introduction")
+      .transition()
+      .duration(500)
+      .style("opacity", 0)
+      .remove();
+
+      d3.selectAll(".description-text")
+        .transition()
+        .duration(500)
+        .style("opacity", 0)
+        .remove();
+
+      d3.selectAll(".cities-comparsion")
+        .transition()
+        .duration(500)
+        .style("opacity", 0)
+        .remove();
+
+      d3.select(".description")
+        .append("h1")
+        .attr("class", "description-text")
+        .text(description_text)
+        .style("opacity", 0)
+        .transition()
+        .duration(500)
+        .delay(500)
+        .style("opacity", 1);
+
+      if(step == "step1") {
+        axes
+        .transition()
+        .duration(500)
+        .delay(500)
+        .style("opacity", 1);
+
+        // foreground
+        // .transition()
+        // .duration(500)
+        // .delay(1000)
+        // .style("stroke", function(d) {
+        //   if (d["城市"] == "台北，台灣") return "#b2abd2";
+        //   else return "#ccc"
+        // })
+        // .style("stroke-width", function(d) {
+        //   if (d["城市"] == "台北，台灣") return 5;
+        //   else return null;
+        // })
+        // .style("stroke-opacity", .7);
+
+        foreground
+        .transition()
+        .duration(500)
+        .delay(1000)
+          .style("stroke", function(d) {
+            if (d["城市"] == "台北，台灣") {
+              return "#b2abd2";
+            } else if(cities_of_step.indexOf(d["城市"]) > -1) {
+              return "#fdb863";
+            } else {
+              return "#ccc";
+            }
+          })
+          .style("stroke-width", function(d) {
+            if(cities_of_step.indexOf(d["城市"]) > -1) {
+              return 5;
+            } else {
+              return 1;
+            }
+          })
+          .style("stroke-opacity", function(d) {
+            if(cities_of_step.indexOf(d["城市"]) > -1) {
+              d3.select(this).moveToFront();
+              return 1;
+            } else {
+              return .7;
+            }
+          });
+
+        cities_comparsion(cities_of_step, 500, 500);
+      } else if (step === "explore") {
+        chart.style("pointer-events", "none");
+
+        axes
+        .style("opacity", 1);
+
+        // foreground
+        // .transition();
+
+        foreground
+        .transition() // Set a new transition to stop all scheduled and running transitions.
+        .style("stroke", function(d) {
+          if (d["城市"] == "台北，台灣") return "#b2abd2";
+          else return "#ccc";
+        })
+        .style("stroke-width", function(d) {
+          if (d["城市"] == "台北，台灣") return 5;
+          else return 2;
+        })
+        .style("stroke-opacity", function(d) {
+          if (d["城市"] == "台北，台灣") {
+            d3.select(this).moveToFront();
+            return 1;
+          } else {
+            return .7;
+          }
+        });
+
+        foreground
+        .on("mouseover", function(d) {
+          if(d["城市"] !== "台北，台灣") {
+            d3.select(this).style("stroke", "#fdb863")
+              .style("stroke-width", 5)
+              .style("stroke-opacity", 1)
+              .moveToFront();
+
+            d3.selectAll(".cities-comparsion")
+              .style("opacity", 0)
+              .remove();
+
+            var c = ["台北，台灣"]
+            c.push(d["城市"]);
+            cities_comparsion(c, 0, 0);
+          }
+        })
+        .on("mouseout", function(d) {
+          if(d["城市"] !== "台北，台灣") {
+            d3.select(this)
+              .style("stroke", "#ccc")
+              .style("stroke-width", 2.5)
+              .style("stroke-opacity", .7)
+              .moveToBack();
+
+            d3.selectAll(".cities-comparsion")
+              .style("opacity", 0)
+              .remove();
+
+            var c = ["台北，台灣"]
+            cities_comparsion(c, 0, 0);
+          }
+        });
+
+        cities_comparsion(cities_of_step, 0, 0);
+
+      } else {
+        axes
+        .style("opacity", 1);
+
+        // foreground
+        // .style("stroke", function(d) {
+        //   if (d["城市"] == "台北，台灣") return "#b2abd2";
+        //   else return "#ccc"
+        // })
+        // .style("stroke-width", function(d) {
+        //   if (d["城市"] == "台北，台灣") return 5;
+        //   else return 1;
+        // })
+        // .style("stroke-opacity", .7);
+
+        foreground
+        .transition()
+        .duration(500)
+        .delay(1000)
+          .style("stroke", function(d) {
+            if (d["城市"] == "台北，台灣") {
+              return "#b2abd2";
+            } else if(cities_of_step.indexOf(d["城市"]) > -1) {
+              return "#fdb863";
+            } else {
+              return "#ccc";
+            }
+          })
+          .style("stroke-width", function(d) {
+            if(cities_of_step.indexOf(d["城市"]) > -1) {
+              return 5;
+            } else {
+              return 1;
+            }
+          })
+          .style("stroke-opacity", function(d) {
+            if (cities_of_step.indexOf(d["城市"]) > -1) {
+              d3.select(this).moveToFront();
+              return 1;
+            } else {
+              // d3.select(this).moveToFront();
+              return .7;
+            }
+          });
+
+        cities_comparsion(cities_of_step, 500, 500);
+      }
+    } else {
+      chart.style("pointer-events", "auto");
+
+      svg.append("text")
+      .attr("class", "introduction")
+      .attr("x", w/2)
+      .attr("y", h/2)
+      .text("觀光客在台北旅遊會花多少錢？利用圖表一起來探索 2015 年全球 71 座城市旅遊花費")
+      .style("font-size", "35px")
+      .style("font-weight", "bold")
+      .attr("text-anchor", "middle")
+      .style("opacity", 0)
+      .transition()
+      .duration(500)
+      .style("opacity", 1);
+
+      svg.append("text")
+      .attr("class", "introduction")
+      .attr("x", w/2)
+      .attr("y", h/2 + 40)
+      .text("點一下圖表來看看！")
+      .style("font-size", "35px")
+      .style("font-weight", "bold")
+      .attr("text-anchor", "middle")
+      .style("opacity", 0)
+      .transition()
+      .duration(500)
+      .style("opacity", 1);
+
+      axes
+      .transition()
+      .duration(500)
+      .style("opacity", .3);
+
+      foreground
+      .transition()
+      .duration(500)
+        .style("stroke", function(d) {
+            return "#ccc";
+        })
+        .style("stroke-width", function(d) {
+            return null;
+        })
+        .style("stroke-opacity", function(d) {
+            return .3;
+        });
+
+      d3.selectAll(".cities-comparsion")
+        .transition()
+        .duration(500)
+        .style("opacity", 0)
+        .remove();
+
+      d3.select(".description-text")
+        .transition()
+        .duration(500)
+        .style("opacity", 0)
+        .remove();
+
+      d3.select(".description")
+        .append("h1")
+        .attr("class", "description-text")
+        .text("")
+        .style("opacity", 0)
+        .transition()
+        .duration(500)
+        .delay(500)
+        .style("opacity", 1);
+    }
+  }
+
+  function cities_comparsion(cities_name, transition_duration, transition_delay) {
+    var y = h,
+        offset = 15;
+
+    var cities_list = cities.filter(function(d) {
+      return cities_name.indexOf(d["城市"]) > -1;
+    });
+
+    for(var i = 0; i < cities_name.length; i += 1) {
+      axes.append("text")
+          .attr("class", "cities-comparsion")
+          .attr("text-anchor", "middle")
+          .attr("y", y)
+          .text(function(d) {
+            var current_operation = cities_list.sort(function(a, b) { return d3.descending(+a[d], +b[d]); })
+                                    .map(function(d) { return d["城市"]; });
+            return current_operation[i];
+          })
+          .style("fill", function(d) {
+            var current_operation = cities_list.sort(function(a, b) { return d3.descending(+a[d], +b[d]); })
+                                    .map(function(d) { return d["城市"]; });
+
+            if(current_operation[i] == "台北，台灣") return "#5e3c99"
+            else return "#e66101"
+          })
+          .style("opacity", 0)
+          .transition()
+          .duration(transition_duration)
+          .delay(transition_duration + transition_delay)
+          .style("opacity", 1);
+
+      y += offset;
+
+      axes.append("text")
+          .attr("class", "cities-comparsion")
+          .attr("text-anchor", "middle")
+          .attr("y", y)
+          .text(function(d) {
+            var current_operation = cities_list.sort(function(a, b) { return d3.descending(+a[d], +b[d]); })
+                                    // .map(function(d) { return d["城市"]; });
+
+            return "第 " + (rank[d](+current_operation[i][d])) + " 高 / 共 71 名";
+          })
+          .style("fill", function(d) {
+            var current_operation = cities_list.sort(function(a, b) { return d3.descending(+a[d], +b[d]); })
+                                    .map(function(d) { return d["城市"]; });
+
+            if(current_operation[i] == "台北，台灣") return "#5e3c99"
+            else return "#e66101"
+          })
+          .style("opacity", 0)
+          .transition()
+          .duration(transition_duration)
+          .delay(transition_duration + transition_delay)
+            .style("opacity", 1);
+
+      y += offset;
+
+      axes.append("text")
+          .attr("class", "cities-comparsion")
+          .attr("text-anchor", "middle")
+          .attr("y", y)
+          .text(function(d) {
+            var current_operation = cities_list.sort(function(a, b) { return d3.descending(+a[d], +b[d]); })
+
+            return "$ " + numberWithCommas(Math.round(+current_operation[i][d] * usd_exchange_rate)) + " NTD";
+          })
+          .style("fill", function(d) {
+            var current_operation = cities_list.sort(function(a, b) { return d3.descending(+a[d], +b[d]); })
+                                    .map(function(d) { return d["城市"]; });
+
+            if(current_operation[i] == "台北，台灣") return "#5e3c99"
+            else return "#e66101"
+          })
+          .style("opacity", 0)
+          .transition()
+          .duration(transition_duration)
+          .delay(transition_duration + transition_delay)
+          .style("opacity", 1);
+
+      y += offset * 1.5;
+
+      function numberWithCommas(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      }
+    }
+  }
+});
+
+// Returns the path for a given data point.
+function path(d) {
+  // For example, ["Consumer Price", "Rent", "Consumer Price+Rent", "Groceries", "Restaurant Price", "Local Purch. Power"]
+  // will become [[x("Consumer Price"), y["Consumer Price"](cities[0]["Consumer Price"])], blablabla],
+  // if we have several points, we can generate a line using d3.svg.line().
+  return line(dimensions.map(function(p) { return [x(p), y[p](d[p] * usd_exchange_rate)]; }));
+}
+
+// Handles a brush event, toggling the display of foreground lines.
+function brush() {
+  var actives = dimensions.filter(function(p) { return !y[p].brush.empty(); }),
+      extents = actives.map(function(p) { return y[p].brush.extent(); });
+  foreground.style("display", function(d) {
+    return actives.every(function(p, i) {
+      return extents[i][0] <= d[p] && d[p] <= extents[i][1];
+    }) ? null : "none";
+  });
+}
+</script>

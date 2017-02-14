@@ -1,0 +1,1 @@
+It would be helpful if this were coordinated with a symbol map so that you could see the locations of the selected cities…
