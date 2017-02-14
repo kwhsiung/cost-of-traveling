@@ -1,29 +1,43 @@
 <!DOCTYPE html>
+<html class="kwhsiung-github-io">
 <meta charset="utf-8">
 <style>
-body {
+.jf-loading body { /*載入中不顯示*/
+      opacity: 0;
+      visibility: hidden;
+}
+
+.kwhsiung-github-io body {
   /*font-family: "Open Sans", "Hiragino Sans GB", "Source Sans Pro", "Microsoft YaHei", "微软雅黑", "STHeiti", "WenQuanYi Micro Hei", sans-serif;*/
   font-family: 'xingothic-tc';
-  font-weight: 500;
+  font-weight: 300;
 
 }
 
 .introduction {
   /*font-family: "Open Sans", "Hiragino Sans GB", "Source Sans Pro", "Microsoft YaHei", "微软雅黑", "STHeiti", "WenQuanYi Micro Hei", sans-serif;*/
   font-family: 'xingothic-tc';
-  font-weight: 500;
+  font-weight: 300;
+
+}
+
+.description-text {
+  /*font-family: "Open Sans", "Hiragino Sans GB", "Source Sans Pro", "Microsoft YaHei", "微软雅黑", "STHeiti", "WenQuanYi Micro Hei", sans-serif;*/
+  font-family: 'xingothic-tc';
+  font-weight: 300;
 
 }
 
 .cities-comparsion {
   font-family: 'xingothic-tc';
-  font-weight: 500;
+  font-weight: 300;
 }
 
 .axes-label {
   font-family: 'xingothic-tc';
   font-weight: 100;
 }
+
 
 p.step-button {
   border-bottom: 2px solid #bdbdbd;
@@ -218,7 +232,6 @@ svg.append("text")
 .attr("y", h/2)
 .text("觀光客在台北旅遊會花多少錢？利用圖表一起來探索 2015 年全球 71 座城市旅遊花費")
 .style("font-size", "35px")
-.style("font-weight", "bold")
 .attr("text-anchor", "middle");
 
 svg.append("text")
@@ -227,7 +240,6 @@ svg.append("text")
 .attr("y", h/2 + 40)
 .text("點一下圖表來看看！")
 .style("font-size", "35px")
-.style("font-weight", "bold")
 .attr("text-anchor", "middle");
 
 
@@ -660,7 +672,6 @@ d3.csv("pricecomparsion-zhTW.csv", function(error, cities) {
       .attr("y", h/2)
       .text("觀光客在台北旅遊會花多少錢？利用圖表一起來探索 2015 年全球 71 座城市旅遊花費")
       .style("font-size", "35px")
-      .style("font-weight", "bold")
       .attr("text-anchor", "middle")
       .style("opacity", 0)
       .transition()
@@ -673,7 +684,6 @@ d3.csv("pricecomparsion-zhTW.csv", function(error, cities) {
       .attr("y", h/2 + 40)
       .text("點一下圖表來看看！")
       .style("font-size", "35px")
-      .style("font-weight", "bold")
       .attr("text-anchor", "middle")
       .style("opacity", 0)
       .transition()
@@ -830,3 +840,4 @@ function brush() {
   });
 }
 </script>
+</html>
