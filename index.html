@@ -436,10 +436,10 @@ d3.csv("pricecomparsion-zhTW.csv", function(error, cities) {
   .on("click", function() { perform_step("explore"); })
 
   function perform_step(step) {
-    var taipei = ["台北，台灣"],
-        east_asia_and_taipei = ["東京，日本", "香港", "北京，中國", "上海，中國", "台北，台灣"],
-        euro_and_taipei = ["紐約，美國", "阿姆斯特丹，荷蘭", "巴黎，法國", "柏林，德國", "倫敦，英國", "台北，台灣"],
-        usa_and_taipei = ["紐約，美國", "芝加哥，美國", "邁阿密，美國", "洛杉磯，美國", "台北，台灣"];
+    var taipei = ["臺北，台灣"],
+        east_asia_and_taipei = ["東京，日本", "香港", "北京，中國", "上海，中國", "臺北，台灣"],
+        euro_and_taipei = ["紐約，美國", "阿姆斯特丹，荷蘭", "巴黎，法國", "柏林，德國", "倫敦，英國", "臺北，台灣"],
+        usa_and_taipei = ["紐約，美國", "芝加哥，美國", "邁阿密，美國", "洛杉磯，美國", "臺北，台灣"];
 
     var description_text,
         cities_of_step;
@@ -450,19 +450,19 @@ d3.csv("pricecomparsion-zhTW.csv", function(error, cities) {
         cities_of_step = null;
         break;
       case "step1":
-        description_text = "台北旅費與他國 70 座城市比較";
+        description_text = "臺北旅費與他國 70 座城市比較";
         cities_of_step = taipei;
         break;
       case "step2":
-        description_text = "台北旅費與東亞城市旅費比較";
+        description_text = "臺北旅費與東亞城市旅費比較";
         cities_of_step = east_asia_and_taipei;
         break;
       case "step3":
-        description_text = "台北旅費與歐美城市旅費比較";
+        description_text = "臺北旅費與歐美城市旅費比較";
         cities_of_step = euro_and_taipei;
         break;
       case "step4":
-        description_text = "台北旅費與美國城市旅費比較";
+        description_text = "臺北旅費與美國城市旅費比較";
         cities_of_step = usa_and_taipei;
         break;
       case "explore":
@@ -522,11 +522,11 @@ d3.csv("pricecomparsion-zhTW.csv", function(error, cities) {
         // .duration(500)
         // .delay(1000)
         // .style("stroke", function(d) {
-        //   if (d["城市"] == "台北，台灣") return "#b2abd2";
+        //   if (d["城市"] == "臺北，台灣") return "#b2abd2";
         //   else return "#ccc"
         // })
         // .style("stroke-width", function(d) {
-        //   if (d["城市"] == "台北，台灣") return 5;
+        //   if (d["城市"] == "臺北，台灣") return 5;
         //   else return null;
         // })
         // .style("stroke-opacity", .7);
@@ -536,7 +536,7 @@ d3.csv("pricecomparsion-zhTW.csv", function(error, cities) {
         .duration(500)
         .delay(1000)
           .style("stroke", function(d) {
-            if (d["城市"] == "台北，台灣") {
+            if (d["城市"] == "臺北，台灣") {
               return "#b2abd2";
             } else if(cities_of_step.indexOf(d["城市"]) > -1) {
               return "#fdb863";
@@ -573,15 +573,15 @@ d3.csv("pricecomparsion-zhTW.csv", function(error, cities) {
         foreground
         .transition() // Set a new transition to stop all scheduled and running transitions.
         .style("stroke", function(d) {
-          if (d["城市"] == "台北，台灣") return "#b2abd2";
+          if (d["城市"] == "臺北，台灣") return "#b2abd2";
           else return "#ccc";
         })
         .style("stroke-width", function(d) {
-          if (d["城市"] == "台北，台灣") return 5;
+          if (d["城市"] == "臺北，台灣") return 5;
           else return 2;
         })
         .style("stroke-opacity", function(d) {
-          if (d["城市"] == "台北，台灣") {
+          if (d["城市"] == "臺北，台灣") {
             d3.select(this).moveToFront();
             return 1;
           } else {
@@ -591,7 +591,7 @@ d3.csv("pricecomparsion-zhTW.csv", function(error, cities) {
 
         foreground
         .on("mouseover", function(d) {
-          if(d["城市"] !== "台北，台灣") {
+          if(d["城市"] !== "臺北，台灣") {
             d3.select(this).style("stroke", "#fdb863")
               .style("stroke-width", 5)
               .style("stroke-opacity", 1)
@@ -601,13 +601,13 @@ d3.csv("pricecomparsion-zhTW.csv", function(error, cities) {
               .style("opacity", 0)
               .remove();
 
-            var c = ["台北，台灣"]
+            var c = ["臺北，台灣"]
             c.push(d["城市"]);
             cities_comparsion(c, 0, 0);
           }
         })
         .on("mouseout", function(d) {
-          if(d["城市"] !== "台北，台灣") {
+          if(d["城市"] !== "臺北，台灣") {
             d3.select(this)
               .style("stroke", "#ccc")
               .style("stroke-width", 2.5)
@@ -618,7 +618,7 @@ d3.csv("pricecomparsion-zhTW.csv", function(error, cities) {
               .style("opacity", 0)
               .remove();
 
-            var c = ["台北，台灣"]
+            var c = ["臺北，台灣"]
             cities_comparsion(c, 0, 0);
           }
         });
@@ -631,11 +631,11 @@ d3.csv("pricecomparsion-zhTW.csv", function(error, cities) {
 
         // foreground
         // .style("stroke", function(d) {
-        //   if (d["城市"] == "台北，台灣") return "#b2abd2";
+        //   if (d["城市"] == "臺北，台灣") return "#b2abd2";
         //   else return "#ccc"
         // })
         // .style("stroke-width", function(d) {
-        //   if (d["城市"] == "台北，台灣") return 5;
+        //   if (d["城市"] == "臺北，台灣") return 5;
         //   else return 1;
         // })
         // .style("stroke-opacity", .7);
@@ -645,7 +645,7 @@ d3.csv("pricecomparsion-zhTW.csv", function(error, cities) {
         .duration(500)
         .delay(1000)
           .style("stroke", function(d) {
-            if (d["城市"] == "台北，台灣") {
+            if (d["城市"] == "臺北，台灣") {
               return "#b2abd2";
             } else if(cities_of_step.indexOf(d["城市"]) > -1) {
               return "#fdb863";
@@ -763,7 +763,7 @@ d3.csv("pricecomparsion-zhTW.csv", function(error, cities) {
             var current_operation = cities_list.sort(function(a, b) { return d3.descending(+a[d], +b[d]); })
                                     .map(function(d) { return d["城市"]; });
 
-            if(current_operation[i] == "台北，台灣") return "#5e3c99"
+            if(current_operation[i] == "臺北，台灣") return "#5e3c99"
             else return "#e66101"
           })
           .style("opacity", 0)
@@ -788,7 +788,7 @@ d3.csv("pricecomparsion-zhTW.csv", function(error, cities) {
             var current_operation = cities_list.sort(function(a, b) { return d3.descending(+a[d], +b[d]); })
                                     .map(function(d) { return d["城市"]; });
 
-            if(current_operation[i] == "台北，台灣") return "#5e3c99"
+            if(current_operation[i] == "臺北，台灣") return "#5e3c99"
             else return "#e66101"
           })
           .style("opacity", 0)
@@ -812,7 +812,7 @@ d3.csv("pricecomparsion-zhTW.csv", function(error, cities) {
             var current_operation = cities_list.sort(function(a, b) { return d3.descending(+a[d], +b[d]); })
                                     .map(function(d) { return d["城市"]; });
 
-            if(current_operation[i] == "台北，台灣") return "#5e3c99"
+            if(current_operation[i] == "臺北，台灣") return "#5e3c99"
             else return "#e66101"
           })
           .style("opacity", 0)
